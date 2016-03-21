@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+	<title>qrcode</title>
+</head>
+<body>
+<img src="{% static qrcode_path %}">
+<a href="{{ qrcode_link }}">link</a>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset:UTF-8">
+	<title>Account List</title>
+</head>
+<body>
+	<h1>Account Adding</h1>
+	<form method="post" action="{% url 'keychain:web:user_add_account' %}">
+	{% csrf_token %}
+	{{ account_form.as_p }}
+	<input type="submit" value="add">
+	</form>
+
+</body>
+</html>

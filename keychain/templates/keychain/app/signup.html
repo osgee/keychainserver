@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>App Sign Up</title>
+</head>
+<body>
+<h1>App Sign Up</h1>
+{% if err_message %}
+<h5>{{ err_message }}</h5>
+{% endif %}
+<form method="POST" enctype="multipart/form-data" action="{% url 'keychain:app_signup' %}">
+{% csrf_token %}
+{{ app_form.as_p }}
+<input type="submit" value="ok"/>
+</form>
+</body>
+</html>
