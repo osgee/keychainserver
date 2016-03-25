@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+	<title>User Sign Up</title>
+</head>
+<body>
+	<h1>Sign Up</h1>
+	{% if err_message %}
+	<h5>{{ err_message }}</h5>
+	{% endif %}
+	<form method="post" action="{% url 'keychain:web:user_signup' %}">
+		{% csrf_token %}
+		{{ user_form.as_p }}
+		<a href="{% url 'keychain:web:user_signup' %}">
+		<img src="{% static captcha_url %}"></a><br>
+		<input type="submit" value="sign up">
+	</form>
+	<a href="{% url 'keychain:web:user_signin' %}"><input type='submit' value='sign in'></a>
+</body>
+</html>

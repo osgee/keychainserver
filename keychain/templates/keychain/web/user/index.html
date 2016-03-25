@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Conten-Type" content="text/html; charset=UTF-8">
+	<title>User Home</title>
+</head>
+<body>
+{% if user_name %}
+	
+	<h1>Welcome</h1>
+	<h2>Sign Up Successfully</h2>
+	{{ user_name }}
+	<a href="{% url 'keychain:web:user_signout' %}"><input type='button' value='sign out'></a>
+	<a href="{% url 'keychain:web:user_add_account' %}"><input type='button' value='add account'></a>
+	<br/>
+	{% if account_list %}
+	<h2>Accounts:</h2>
+		{% for account in account_list %}
+			<p>username: {{ account.account_username }}&nbsp;
+			password: {{ account.account_password }} &nbsp; platform: {{ account.account_app.app_name }} <a href="{% url 'keychain:web:user_delete_account' account.account_id.hex %} "><button>delete</button></a> <a href="{% url 'keychain:web:user_update_account' account.account_id.hex %} "><button>update</button></a></p>
+
+		{% endfor %}
+		
+	{% endif %}
+{% else %}
+	<h1>Please Sign In</h1>
+	<a href="{% url 'keychain:web:user_signin' %}"><input type='button' value='sign in'></a>
+	<a href="{% url 'keychain:web:user_signup' %}"><input type='button' value='sign up'></a>
+	<a href="{% url 'keychain:web:user_signout' %}"><input type='button' value='sign out'></a>
+{% endif %}
+
+</body>
+</html>
