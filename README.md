@@ -1,6 +1,8 @@
 # keychainserver
 
-在/etc/apache2/sites-enabled 下新建一个文件 mysites.conf
+### configure apache2
+
+in /etc/apache2/sites-enabled create new config file 001-keychainserver.conf
 
     <VirtualHost *:8080>
         ServerName https://${C9_HOSTNAME}:443
@@ -8,28 +10,38 @@
         ProxyPassReverse / http://localhost:8000/
         ErrorLog ${APACHE_LOG_DIR}/error.log
         CustomLog ${APACHE_LOG_DIR}/access.log combined
-        #ProxyPass / http://localhost:8000/
-        #ProxyPassReverse / http://localhost:8000/
     </VirtualHost>
     
-在/etc/apache2/conf-enabled 下新建一个文件 http.conf
+in /etc/apache2/conf-enabled create new config file http-proxy.conf
 
     LoadModule proxy_module /usr/lib/apache2/modules/mod_proxy.so
     LoadModule proxy_http_module /usr/lib/apache2/modules/mod_proxy_http.so
 
+restart Apache2
+
     $ service apache2 restart
+
+### configure database 
+restrat Mysql
 
     $ service mysql restart
 
     $ mysql -uroot -p
+    
+create database
 
     mysql > create database superkeychain;  
 
+install python3 dependencies
+
     $ sudo pip3 install django pymysql qrcode pycrypto rsa
 
-    $ sudo python3 manage.py makemigrations
+init database
 
+    $ sudo python3 manage.py makemigrations
     $ sudo python3 manage.py migrate
+
+run server
 
     $ sudo python3 manage.py runserver localhost:8000
 
@@ -37,7 +49,7 @@
 
     $ sudo apt-get install uwsgi 
 
-#### 代理https
+#### proxy on https
 
     <VirtualHost *:80>  
         <IfModule mod_proxy.c>  
@@ -76,41 +88,47 @@
 
 #### https:
 
-##### 1）生成服务器Apache的RSA私钥server.key：
+##### 1）generate Apache's RSA private key server.key：
 
-    $ openssl genrsa -out server.key 1024
+    $ openssl genrsa -out server.key 2048
 
-##### 2）生成签署申请server.csr：
+##### 2）sign request server.csr：
 
-    $ openssl req -new -out server.csr -key server.key -config ..\conf\openssl.cnf 
+    $ openssl req -new -out server.csr -key server.key
 
-注：这一步会需要输入，国家，地区（省市），公司，部门，姓名，邮箱的信息，还有一个密码。
+ps：infos about country，province（city），department，name，email，password...
 
-##### 3）通过CA为网站服务器签署证书：
-命令1-生成CA私钥：
+##### 3）sign to webiste server certificate by CA：
+cmd1-generate CA private key：
 
     $ openssl genrsa -out ca.key 1024
 
-命令2-利用CA私钥生成CA的自签署证书：
+cmd2-use CA private key to generate CA's self-sign certificate：
 
-    $ openssl req -new -x509 -days 365 -key ca.key -out ca.crt -config ..\conf\openssl.cnf
+    $ openssl req -new -x509 -days 365 -key ca.key -out ca.crt 
 
-注：这步要填写信息，同上
+ps: infos as privious
 
-命令3-CA为网站服务器签署证书：
-在bin目录下创建demoCA，里面创建文件index.txt和serial以及文件夹newcerts，serial内容为01，其他为空。再执行下面的命令，生成server.crt文件
+cmd3-sign to webiste server certificate by CA：
+create folder demoCA in /bin，create file index.txt, serial and folder newcerts inside，the file serial's content is 01，while others kept empty。
+then use openssl ca to generate server.crt certificate
 
-    $ openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key -config ..\conf\openssl.cnf
+    $ mkdir demoCA
+    $ cd demoCA
+    $ echo ''>index.txt
+    $ echo '01'>serial
+    $ mkdir newcerts
+    $ openssl ca -in server.csr -out server.crt -cert ca.crt -keyfile ca.key
 
-#### 4）复制文件：
-将server.crt，server.key，ca.key复制到apache的conf文件夹下。
+#### 4）cp files：
+copy server.crt，server.key，ca.key to apache2's conf file folder
 
     ref: <a href="http://openwares.net/misc/pki_key_pair_certificate.html">reffrence</a>
       
 ### issues
 
-#### apache 启动失败
-Apache启动报错：
+#### apache start failure
+Apache start failure：
 the requested operation has failed
 Syntax error on line 487 of D:/Java/Apache2.2/conf/httpd.conf:
 Invalid command 'ProxyPass', perhaps misspelled or defined by a module not inclu
