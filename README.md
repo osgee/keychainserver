@@ -123,7 +123,7 @@ then use openssl ca to generate server.crt certificate
 #### 4）cp files：
 copy server.crt，server.key，ca.key to apache2's conf file folder
 
-    ref: <a href="http://openwares.net/misc/pki_key_pair_certificate.html">reffrence</a>
+ref: <a href="http://openwares.net/misc/pki_key_pair_certificate.html">refferrence</a>
       
 ### issues
 
@@ -134,7 +134,7 @@ Syntax error on line 487 of D:/Java/Apache2.2/conf/httpd.conf:
 Invalid command 'ProxyPass', perhaps misspelled or defined by a module not inclu
 ded in the server configuration
 Note the errors or messages above, and press the key to exit. 0....
-原因：需要在http.conf文件中配置以下模块：
+reason：configure http.conf and add modules：
 LoadModule proxy_module modules/mod_proxy.so
 LoadModule proxy_http_module modules/mod_proxy_http.so
 
