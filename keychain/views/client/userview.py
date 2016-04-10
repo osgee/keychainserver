@@ -13,18 +13,12 @@ import uuid
 import json
 import math
 import time
-<<<<<<< HEAD
 import threading
-=======
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 
 from keychain import captcha as captcha_generator
 from keychain.models import App, Service, Account, User
 from keychain import cryptool
-<<<<<<< HEAD
 from keychain import emailutil
-=======
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 
 from io import BytesIO
 
@@ -52,19 +46,13 @@ def signout(request):
 		if userdb is not None:
 			userdb.delete_cookie()
 			return status_response(1)
-<<<<<<< HEAD
 		return status_response(-1)
 	return status_response(-6)
-=======
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 
 def status_response(error_code):
 	d = {}
 	d['status_code']=error_code
-<<<<<<< HEAD
 	print(error_code)
-=======
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 	return HttpResponse(json.dumps(d))
 
 @csrf_exempt
@@ -88,21 +76,12 @@ def signin(request):
 			user.user_password = certjson['user_password']
 			data['user'] = userjson
 			
-<<<<<<< HEAD
 			accounts = Account.objects.filter(account_user=userdb)
 			# print(dir(accounts))
 			if accounts is not None and accounts.count() > 0:
 				l = []
 				for account in accounts:
 					l.append(Account.to_JSON(account.decrypt(certjson['user_password'])))
-=======
-			accounts = Account.objects.filter(account_user=user)
-			print(dir(accounts))
-			if accounts is not None and accounts.count() > 0:
-				l = []
-				for account in accounts:
-					l.append(Account.to_JSON(account))
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 				accountsJson = json.dumps(l)
 				data['accounts'] = accountsJson
 			else:
@@ -135,10 +114,6 @@ def validate_request(request,allowcookie=True):
 	account_type = reqjson['account_type']
 	cert_crypt_rsa = reqjson['cert_crypt_rsa']
 	cert = cryptool.decrypt_rsa_base64(cert_crypt_rsa,'private_key_py.pem')
-<<<<<<< HEAD
-	print(cert)
-=======
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 	certjson = json.loads(cert)
 	time_in_cert = certjson['time']
 	if time_client!=time_in_cert:
@@ -151,11 +126,6 @@ def validate_request(request,allowcookie=True):
 	if 'data_crypt_aes' in reqjson:
 		data_crypt_aes = reqjson['data_crypt_aes']
 		datajsonstring = cryptool.decrypt_aes(data_crypt_aes,aes_key)
-<<<<<<< HEAD
-		# print(datajsonstring)
-=======
-		print(datajsonstring)
->>>>>>> c060074fc40766307c38dd8b73df5e0e338be545
 		datajson = json.loads(datajsonstring)
 	user = None
 	userdb = None
