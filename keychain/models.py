@@ -76,15 +76,12 @@ class User(models.Model):
 	def get_by_password(self):
 		user_password_plain = self.user_password
 		salt = self.get_salt()
-		# print(salt)
 		self.user_password = cryptool.digest_sha256(self.user_password,salt)
 
 		if self.user_type in [4,'4']:
-			# print('in cookie')
 			return self.get_by_cookie()
 
 		if self.user_type in [1,'1']:
-			# print('in username')
 			try:
 				user=User.objects.get(user_name=self.user_name, user_password=self.user_password)
 				user.user_password_plain = user_password_plain
@@ -92,7 +89,6 @@ class User(models.Model):
 			except User.DoesNotExist:
 				pass
 		if self.user_type in [2,'2'] :
-			# print('in email'+self.user_password)
 			try:
 				user=User.objects.get(user_email=self.user_email, user_password=self.user_password)
 				user.user_password_plain = user_password_plain
@@ -100,7 +96,6 @@ class User(models.Model):
 			except User.DoesNotExist:
 				pass
 		if self.user_type in [3,'3']:
-			# print('in CELLPHONE')
 			try:
 				user=User.objects.get(user_cellphone=self.user_cellphone, user_password=self.user_password)
 				user.user_password_plain = user_password_plain
@@ -115,7 +110,6 @@ class User(models.Model):
 			except User.DoesNotExist:
 				pass
 		if self.user_type in [2,'2'] :
-			# print(self.user_email)
 			try:
 				return User.objects.get(user_email=self.user_email).user_salt
 			except User.DoesNotExist:

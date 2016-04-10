@@ -63,7 +63,6 @@ def decrypt_rsa_base64(cryptbase64,prikeyfilepath):
 		return content
 
 def sign(message,key):
-	# print(message+key)
 	return digest_sha256(message+key)
 
 def random_salt(length=5):

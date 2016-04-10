@@ -47,7 +47,6 @@ def get_accounts(request):
 		if accounts is not None and accounts.count() > 0:
 			l = []
 			for account in accounts:
-				# account.decrypt(userjson['user_password'])
 				l.append(Account.to_JSON(account.decrypt(userjson['user_password'])))
 			accountsJson = json.dumps(l)
 			data['accounts'] = accountsJson
