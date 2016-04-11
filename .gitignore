@@ -1,12 +1,16 @@
-//**.jpeg
-//**.png
+*.jpeg
+*.png
+**/*.jpeg
+**/*.png
 *.conf
 *.ini
-/upload
-/static
-//**.pyc
-/keychain/static
+upload/
+static/
+/**/*.pyc
+keychain/static/**/*.png
 *.pem
+
+**/**/._.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
