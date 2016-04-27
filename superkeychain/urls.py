@@ -19,6 +19,6 @@ from django.contrib import admin
 from keychain import keychain_urls
 
 urlpatterns = [
-	url(r'^keychain/', include(keychain_urls)),
+    url(r'^keychain/', include(keychain_urls)),
     url(r'^admin/', admin.site.urls),
 ]
