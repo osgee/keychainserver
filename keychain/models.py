@@ -26,7 +26,7 @@ class User(models.Model):
     user_password = models.CharField(max_length=100)
     user_email = models.EmailField(null=True, unique=True, default=None)
     user_cellphone = models.CharField(null=True, max_length=20, unique=True, default=None)
-    user_device = models.CharField(null=True, max_length=20, unique=True)
+    user_device = models.CharField(null=True, max_length=20)
     user_secret = models.CharField(null=True, max_length=15, editable=True)
     user_cookie = models.UUIDField(null=True, editable=True)
     user_cookie_time = models.DateTimeField('cookie expire time', null=True)
