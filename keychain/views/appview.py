@@ -59,10 +59,10 @@ def service(request, app_id):
     try:
         app = App.objects.get(app_id=app_id)
 
-        urlbase = 'http://192.168.253.108/keychain/user/client/'
+        # urlbase = 'http://192.168.253.108/keychain/user/client/'
         s = Service(service_status='I', service_app=app)
-        url = urlbase + s.service_id.hex + '/'
-        img = qrcode.make(url)
+        # url = urlbase + s.service_id.hex + '/'
+        img = qrcode.make(s.service_id.hex)
         img_dir = 'keychain/static/'
         img_path = 'keychain/cache/qrcode/{0}'.format(s.service_id.hex + '.png')
         img.save(img_dir + img_path)

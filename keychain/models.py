@@ -20,6 +20,7 @@ class User(models.Model):
         (3, 'CELLPHONE'),
         (4, 'USERNAME')
     )
+
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_type = models.CharField(max_length=1, choices=USER_TYPES)
     user_name = models.CharField(max_length=50, unique=True, null=True, default=None)
