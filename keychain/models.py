@@ -342,4 +342,8 @@ class Service(models.Model):
 
     def has_expired(self):
         now = timezone.now()
-        return now >= self.service_time + datetime.timedelta(minutes=1)
+        expired =  now >= self.service_time + datetime.timedelta(minutes=0.1)
+        if expired:
+            self.service_status = 'E'
+            self.save()
+        return expired

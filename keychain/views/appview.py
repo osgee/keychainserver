@@ -6,9 +6,12 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.utils import timezone
 from django.views import generic
+from django.views.decorators.csrf import csrf_exempt
 
 from keychain.models import App, Service
 
+
+baseurl = 'https://keychain-miui.c9users.io/keychain/app/service/'
 
 # Create your views here.
 class AppForm(forms.Form):
@@ -54,6 +57,30 @@ def signup(request):
         app_form = AppForm()
         return render(request, 'keychain/app/signup.html', {'app_form': app_form})
 
+@csrf_exempt
+def query(request, app_id, service_id):
+    try:
+        app = App.objects.get(app_id=app_id)
+        s = Service.objects.get(service_id=service_id)
+        s.has_expired()
+        if request.method == 'GET':
+            return render(request, 'keychain/user/client/qrcode.html', {
+                    'service_qrcode': s.service_qrcode,
+                    'app_service': '/keychain/app/service/'+app_id+'/',
+                    'service_url': '/keychain/app/service/'+app_id+'/'+service_id+'/',
+                    'service_status': s.service_status,
+               })
+        elif request.method == 'POST':
+            return HttpResponse(s.service_status)
+        else:
+            return HttpResponse('sorry!')
+        # return HttpResponse(mstream.getvalue(), "image/png")
+
+    except App.DoesNotExist:
+        return HttpResponse('sorry!')
+    except Service.DoesNotExist:
+        return HttpResponse('sorry!')
+
 
 def service(request, app_id):
     try:
@@ -76,7 +103,7 @@ def service(request, app_id):
         #        'qrcode_link': url,
 
         #    })
-        return HttpResponse(mstream.getvalue(), "image/png")
+        return HttpResponseRedirect('/keychain/app/service/'+app_id+'/'+s.service_id.hex+'/')
 
     except App.DoesNotExist:
         app_form = AppForm()

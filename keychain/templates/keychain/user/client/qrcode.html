@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+<head>
+	<title>qrcode</title>
+</head>
+<body id="body">
+<input type="hidden" id="app_service" value="{{ app_service }}">
+<img id="img" src="{% static service_qrcode %}">
+<p id="service_status">{{ service_status }}</p>
+<p id="hint"></p>
+<script src="{% static 'keychain/javascript/jquery-2.2.3.min.js' %}"></script>
+<script>
+    var queryInterval = setInterval(query,1000)
+    function query() {
+       $.post({
+          url: "{{ service_url }}",
+          success: function( result ) {
+              if(result=='E'){
+                  clearInterval(queryInterval)
+                  var a = $("<a></a>")
+                  var img = $("#img")
+                  a.attr("href",$("#app_service").attr("value"))
+                  $("#body").prepend(a)
+                  img.remove().appendTo(a)
+              }
+            $( "#service_status" ).text(result);
+          }
+        });
+    }
+</script>
+</body>
+</html>

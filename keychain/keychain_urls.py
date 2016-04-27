@@ -10,5 +10,6 @@ urlpatterns = [
     url(r'^client/', include(keychain_client_urls)),
     url(r'^app/$', appview.ListView.as_view(), name='app_list'),
     url(r'^app/signup/$', appview.signup, name='app_signup'),
-    url(r'^app/(?P<app_id>\w{32})/service/$', appview.service, name='app_service'),
+    url(r'^app/service/(?P<app_id>\w{32})/$', appview.service, name='app_service'),
+    url(r'^app/service/(?P<app_id>\w{32})/(?P<service_id>\w{32})/$', appview.query, name='service_query'),
 ]
