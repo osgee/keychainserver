@@ -34,7 +34,7 @@ create database
 
 install python3 dependencies
 
-    $ sudo pip3 install django pymysql qrcode pycrypto rsa
+    $ sudo pip3 install django pymysql pillow qrcode pycrypto rsa
 
 init database
 
