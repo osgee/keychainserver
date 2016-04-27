@@ -255,21 +255,20 @@ class Account(models.Model):
     account_user = models.ForeignKey(User, on_delete=models.CASCADE)
     account_app = models.ForeignKey(App, on_delete=models.CASCADE, null=True)
 
-    def encrypt_save(self, password=''):
+    def encrypt_save(self, password):
         salt = self.account_user.user_salt
-        if password == '':
+        if password is None:
             password = self.account_user.user_password_plain
         self.account_password_plain = self.account_password
         self.account_password = cryptool.encrypt_aes(self.account_password, password, salt)
         self.save()
         return self
 
-    def decrypt(self, password = None):
+    def decrypt(self, password):
         salt = self.account_user.user_salt
         if password is None:
             password = self.account_user.user_password_plain
-        if password is not None:
-            self.account_password = cryptool.decrypt_aes(self.account_password, password, salt)
+        self.account_password = cryptool.decrypt_aes(self.account_password, password, salt)
         return self
 
     def load_from_JSON(self, s):
