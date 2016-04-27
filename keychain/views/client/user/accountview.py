@@ -11,8 +11,8 @@ from keychain.views.client.userview import validate_request, status_response, en
 @csrf_exempt
 def get_account(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         if userdb is None:
             return status_response(-3)
@@ -28,8 +28,8 @@ def get_account(request):
 @csrf_exempt
 def get_accounts(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         if userdb is None:
             return status_response(-3)
@@ -51,8 +51,8 @@ def get_accounts(request):
 @csrf_exempt
 def add_account(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         if userdb is not None:
             userjsonstr = datajson['user']
@@ -77,7 +77,7 @@ def add_account(request):
             if 'account_cellphone' in accountjson:
                 account.account_cellphone = accountjson['account_cellphone']
             account.encrypt_save(user_password)
-            account.decrypt(userjson['user_password'])
+            account.decrypt(user_password)
             data = {}
             data['account'] = account.to_JSON()
             return encrypt_response(data, certjson)
@@ -88,8 +88,8 @@ def add_account(request):
 @csrf_exempt
 def delete_account(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         if userdb is not None:
             accountjson = json.loads(datajson['account'])
@@ -108,8 +108,8 @@ def delete_account(request):
 @csrf_exempt
 def update_account(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if valid == False:
             return status_response(status_code)
         accountjson = json.loads(datajson['account'])
         account_id = accountjson['account_id']
@@ -146,7 +146,7 @@ def update_account(request):
                 else:
                     account.account_cellphone = None
                 account.encrypt_save(user_password)
-                account.decrypt(userjson['user_password'])
+                account.decrypt(user_password)
                 data = {}
                 data['account'] = account.to_JSON()
                 return encrypt_response(data, certjson)

@@ -122,7 +122,7 @@ class User(models.Model):
         return ''
 
     def get_by_cookie(self):
-        isexpired = True
+        expired = True
         if hasattr(self, 'user_id') and hasattr(self,
                                                 'user_cookie') and self.user_id is not None and self.user_cookie is not None:
             try:
@@ -130,7 +130,7 @@ class User(models.Model):
                 if timezone.now() < user.user_cookie_time:
                     return user
                 else:
-                    isexpired = True
+                    expired = True
             except User.DoesNotExist:
                 pass
 
@@ -264,11 +264,12 @@ class Account(models.Model):
         self.save()
         return self
 
-    def decrypt(self, password=''):
+    def decrypt(self, password = None):
         salt = self.account_user.user_salt
-        if password == '':
+        if password is None:
             password = self.account_user.user_password_plain
-        self.account_password = cryptool.decrypt_aes(self.account_password, password, salt)
+        if password is not None:
+            self.account_password = cryptool.decrypt_aes(self.account_password, password, salt)
         return self
 
     def load_from_JSON(self, s):

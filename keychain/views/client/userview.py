@@ -33,8 +33,8 @@ def next_captcha():
 @csrf_exempt
 def signout(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         if userdb is not None:
             userdb.delete_cookie()
@@ -53,10 +53,10 @@ def status_response(error_code):
 @csrf_exempt
 def signin(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request, False)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request, False)
+        if not valid:
             return status_response(status_code)
-        if user == None:
+        if user is None:
             return status_response(-4)
         # TO DO chk device_id
 
@@ -163,8 +163,8 @@ def encrypt_response(data, certjson):
 @csrf_exempt
 def chkcookie(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         if userdb is None:
             return status_response(-8)
@@ -175,8 +175,8 @@ def chkcookie(request):
 @csrf_exempt
 def get_all_apps(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, userdb, certjson, datajson = validate_request(request)
-        if isvalid == False:
+        valid, status_code, userdb, userdb, certjson, datajson = validate_request(request)
+        if not valid:
             return status_response(status_code)
         aes_key = certjson['aes_key']
         if userdb is not None:
@@ -199,10 +199,10 @@ def get_all_apps(request):
 @csrf_exempt
 def signup(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request, False)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request, False)
+        if not valid:
             return status_response(status_code)
-        if user == None:
+        if user is None:
             return status_response(-4)
         # TO DO chk device_id
         if 'device_id' in certjson:
@@ -254,10 +254,10 @@ def signup(request):
 @csrf_exempt
 def get_user(request):
     if request.method == 'POST':
-        isvalid, status_code, userdb, user, certjson, datajson = validate_request(request, False)
-        if isvalid == False:
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request, False)
+        if not valid:
             return status_response(status_code)
-        if user == None:
+        if user is None:
             return status_response(-4)
 
         if userdb is not None:
