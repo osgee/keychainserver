@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('keychain', '0001_initial'),
     ]
@@ -25,6 +24,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='user_type',
-            field=models.CharField(choices=[(1, 'USERNAME'), (2, 'EMAIL'), (3, 'CELLPHONE'), (4, 'USERNAME')], max_length=1),
+            field=models.CharField(choices=[(1, 'USERNAME'), (2, 'EMAIL'), (3, 'CELLPHONE'), (4, 'USERNAME')],
+                                   max_length=1),
         ),
     ]

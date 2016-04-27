@@ -1,25 +1,18 @@
-from django.shortcuts import render, render_to_response
-from django.http import HttpResponse, HttpResponseRedirect
-from django.core.urlresolvers import reverse
-from django import forms
-from keychain.models import App, Service, Account, User
-from django.db import models
-from django.views import generic
-import qrcode
-import os
 import datetime
-import uuid
-from keychain import captcha as captcha_generator
-from keychain import cryptool
 import json
-import time
 import math
 import re
+import time
+import uuid
 
-from io import BytesIO
-
+from django import forms
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.utils import timezone
 
+from keychain import captcha as captcha_generator
+from keychain import cryptool
+from keychain.models import Account, User
 
 # Create your views here.
 
@@ -34,6 +27,7 @@ class UserForm(forms.Form):
     password = forms.CharField(max_length=50, widget=forms.PasswordInput)
     captcha = forms.CharField(max_length=4)
 
+
 class UserSignUpForm(forms.Form):
     user_name = forms.CharField(max_length=50)
     password = forms.CharField(max_length=50, widget=forms.PasswordInput)
@@ -46,12 +40,13 @@ def next_captcha():
     captcha_dir = 'keychain/cache/captcha/'
     captcha = captcha_generator.getcaptcha()
     captcha_id = uuid.uuid4().hex
-    captcha_path = captcha_dir+captcha_id+'.png'
-    captcha[0].save(app_dir+captcha_path)
+    captcha_path = captcha_dir + captcha_id + '.png'
+    captcha[0].save(app_dir + captcha_path)
     return captcha_path, captcha[1]
 
+
 def set_cookie(response, user):
-    dt = timezone.now()+datetime.timedelta(minutes=30)
+    dt = timezone.now() + datetime.timedelta(minutes=30)
     # user_cookie = uuid.uuid4().hex
     # user.user_cookie = user_cookie
     # user.user_cookie_time = dt
@@ -60,7 +55,7 @@ def set_cookie(response, user):
     time_now = math.floor(time.mktime(dt.timetuple()))
     response.set_cookie('account_type', user.user_type, expires=dt, domain='localhost')
     response.set_cookie('time', time_now, expires=dt, domain='localhost')
-    d={}
+    d = {}
     d['time'] = time_now
     d['password'] = user.user_password_plain
     if user.user_type == account_type_user_name:
@@ -72,11 +67,12 @@ def set_cookie(response, user):
     if user.user_type == account_type_default:
         d['user_name'] = user.user_name
     user_password_json = json.dumps(d)
-    user_password_crypt = cryptool.encrypt_rsa_base64(user_password_json,'public_key_py.pem')
+    user_password_crypt = cryptool.encrypt_rsa_base64(user_password_json, 'public_key_py.pem')
     response.set_cookie('user_password_crypt', user_password_crypt, expires=dt, domain='localhost')
-    sign = cryptool.digest_sha256(str(user.user_type)+str(time_now)+user_password_crypt)
+    sign = cryptool.digest_sha256(str(user.user_type) + str(time_now) + user_password_crypt)
     response.set_cookie('signature', sign, expires=dt, domain='localhost')
     return response
+
 
 def index(request):
     user = None
@@ -85,12 +81,12 @@ def index(request):
         user_password_crypt = request.COOKIES['user_password_crypt']
         signature = request.COOKIES['signature']
         time_request = request.COOKIES['time']
-        sign = cryptool.digest_sha256(str(account_type)+str(time_request)+user_password_crypt)
+        sign = cryptool.digest_sha256(str(account_type) + str(time_request) + user_password_crypt)
         # print('out signature')
         # print(str(account_type))
         if sign == signature:
             print('in signature')
-            user_password_json = cryptool.decrypt_rsa_base64(user_password_crypt,'private_key_py.pem')
+            user_password_json = cryptool.decrypt_rsa_base64(user_password_crypt, 'private_key_py.pem')
             user_password_dict = json.loads(user_password_json)
             time_in = user_password_dict['time']
             password = user_password_dict['password']
@@ -100,11 +96,11 @@ def index(request):
             if time_now < time_in:
                 user_password = password
                 user = User(user_password=user_password)
-                if account_type==account_type_user_name:
+                if account_type == account_type_user_name:
                     user.user_name = user_name
-                elif account_type==account_type_user_email:
+                elif account_type == account_type_user_email:
                     user.user_email = user_name
-                elif account_type==account_type_user_cellphone:
+                elif account_type == account_type_user_cellphone:
                     user.user_cellphone = user_name
                 else:
                     user.user_name = user_name
@@ -113,7 +109,6 @@ def index(request):
                 # print(password)
                 user = user.get_by_password()
                 if user is not None:
-
                     request.session['user_password_plain'] = password
     if user is not None:
         # print("user is not None")
@@ -121,10 +116,11 @@ def index(request):
         # if account_list is not None:
         #     print("not none")
         return render(request, 'keychain/web/user/index.html', {
-                    'user_name': user.get_name(),
-                    'account_list': account_list, 
-                })
+            'user_name': user.get_name(),
+            'account_list': account_list,
+        })
     return render(request, 'keychain/web/user/index.html', {})
+
 
 def signout(request):
     try:
@@ -141,6 +137,7 @@ def signout(request):
 
     return response
 
+
 def get_account_type(s):
     if isEmail(s):
         return account_type_user_email
@@ -151,21 +148,25 @@ def get_account_type(s):
     else:
         return account_type_default
 
+
 def isEmail(s):
-    m = re.match(r'^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$',s)
+    m = re.match(r'^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$', s)
     if m:
         return True
     else:
         return False
 
+
 def isCellphone(s):
-    m = re.match(r'^((13[0-9])|(15[^4,\D])|(18[0,5-9]))\d{8}$',s)
+    m = re.match(r'^((13[0-9])|(15[^4,\D])|(18[0,5-9]))\d{8}$', s)
     if m:
         return True
     else:
         return False
+
+
 def isUsername(s):
-    m = re.match(r'(\w|\d){6,20}',s)
+    m = re.match(r'(\w|\d){6,20}', s)
     if m:
         return True
     else:
@@ -184,11 +185,11 @@ def signin(request):
                 user_password_plain = user_password
                 user = User(user_password=user_password)
                 account_type = get_account_type(user_name)
-                if account_type==account_type_user_name:
+                if account_type == account_type_user_name:
                     user.user_name = user_name
-                elif account_type==account_type_user_email:
+                elif account_type == account_type_user_email:
                     user.user_email = user_name
-                elif account_type==account_type_user_cellphone:
+                elif account_type == account_type_user_cellphone:
                     user.user_cellphone = user_name
                 else:
                     user.user_name = user_name
@@ -202,12 +203,12 @@ def signin(request):
                     set_cookie(response, user)
                     return response
                 else:
-                    err_message='Account Does Not Exist, Please Sign Up!'
+                    err_message = 'Account Does Not Exist, Please Sign Up!'
             else:
                 err_message = 'Captcha Is False!'
             user_form = UserForm(initial={'user_name': user_name})
         else:
-            err_message=''
+            err_message = ''
     else:
         user_form = UserForm()
         err_message = ''
@@ -215,10 +216,11 @@ def signin(request):
     request.session['captcha'] = captcha[1].lower()
 
     return render(request, 'keychain/web/user/signin.html', {
-            'user_form': user_form,
-            'captcha_url': captcha[0],
-            'err_message': err_message,
-        })
+        'user_form': user_form,
+        'captcha_url': captcha[0],
+        'err_message': err_message,
+    })
+
 
 def signup(request):
     if request.method == 'POST':
@@ -233,11 +235,11 @@ def signup(request):
                 if password == password_repeat:
                     user = User(user_password=password)
                     account_type = get_account_type(user_name)
-                    if account_type==account_type_user_name:
+                    if account_type == account_type_user_name:
                         user.user_name = user_name
-                    elif account_type==account_type_user_email:
+                    elif account_type == account_type_user_email:
                         user.user_email = user_name
-                    elif account_type==account_type_user_cellphone:
+                    elif account_type == account_type_user_cellphone:
                         user.user_cellphone = user_name
                     else:
                         user.user_name = user_name
@@ -245,18 +247,18 @@ def signup(request):
                     if not user.has_signed_up():
                         user.encrypt_save();
                         user.user_password_plain = password
-                        response = HttpResponseRedirect('../index',{
-                                'signup': True,
-                            })
+                        response = HttpResponseRedirect('../index', {
+                            'signup': True,
+                        })
                         request.session['user_id'] = user.user_id.hex
                         set_cookie(response, user)
                         return response
                     else:
-                        err_message = 'Username '+user_name+' Has Already Signed Up!'
+                        err_message = 'Username ' + user_name + ' Has Already Signed Up!'
                 else:
                     err_message = 'Password Is Inconsistent!'
             else:
-                err_message = 'Captcha Is False!' 
+                err_message = 'Captcha Is False!'
             user_form = UserSignUpForm(initial={'user_name': user_name})
         else:
             err_message = ''
@@ -268,12 +270,7 @@ def signup(request):
     request.session['captcha'] = captcha[1].lower()
 
     return render(request, 'keychain/web/user/signup.html', {
-            'user_form': user_form,
-            'captcha_url': captcha[0],
-            'err_message': err_message,
-        })
-
-
-
-        
-        
+        'user_form': user_form,
+        'captcha_url': captcha[0],
+        'err_message': err_message,
+    })
