@@ -25,12 +25,11 @@ def query(request):
                 s.ACTION_TYPES = 'S'
                 s.save()
                 data = {}
-                userjson = json.loads(datajson['user'])
                 accounts = Account.objects.filter(account_app=s.service_app,account_user=userdb)
                 if accounts is not None and accounts.count() > 0:
                     l = []
                     for account in accounts:
-                        l.append(Account.to_json(account.decrypt(userjson['user_password'])))
+                        l.append(account.to_json())
                     accountsjson = json.dumps(l)
                     data['accounts'] = accountsjson
                 else:
