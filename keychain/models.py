@@ -355,7 +355,7 @@ class Service(models.Model):
         else:
             d['service_id'] = None
         d['service_action'] = self.service_action
-        d['service_secret'] = self.service_secret
+        d['service_secret'] = self.service_secret.hex
         d['service_time'] = self.service_time
         d['service_status'] = self.service_status
         if self.service_app is not None and self.service_app.app_id is not None:
