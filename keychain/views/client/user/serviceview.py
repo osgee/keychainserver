@@ -37,7 +37,7 @@ def query(request):
                 data['service'] = s.to_json()
                 return encrypt_response(data, certjson)
             else:
-                return status_code(-9)
+                return status_response(-9)
         except Service.DoesNotExist:
             return status_response(-8)
         return encrypt_response(data, certjson)
