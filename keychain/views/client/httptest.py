@@ -61,8 +61,8 @@ def userstatus(request):
     if request.method == 'POST':
         body = request.body.decode('utf-8')
         userin = User()
-        userin.load_from_JSON(body)
+        userin.load_from_json(body)
         user = User.objects.get(user_name='taofeng')
-        userjson = user.to_JSON()
+        userjson = user.to_json()
         return HttpResponse(userjson)
     return HttpResponse("failed!")

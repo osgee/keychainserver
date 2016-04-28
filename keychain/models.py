@@ -157,7 +157,7 @@ class User(models.Model):
                 pass
         return False
 
-    def load_from_JSON(self, s):
+    def load_from_json(self, s):
         d = json.loads(s)
         self.user_id = uuid.UUID(d['user_id'])
         self.user_type = d['user_type']
@@ -170,7 +170,7 @@ class User(models.Model):
         self.user_cookie = uuid.UUID(d['user_cookie'])
         return self
 
-    def to_JSON(self, cert=True):
+    def to_json(self, cert=True):
         d = {}
         if self.user_id is not None:
             d['user_id'] = self.user_id.hex
@@ -218,7 +218,7 @@ class App(models.Model):
     app_publickey = models.FileField(upload_to=app_publickey_path)
     app_logo = models.ImageField(upload_to=app_logo_path)
 
-    def load_from_JSON(self, s):
+    def load_from_json(self, s):
         jsonApp = json.loads(s)
         self.app_id = uuid.UUID(jsonApp['app_id'])
         self.app_name = jsonApp['app_name']
@@ -227,7 +227,7 @@ class App(models.Model):
         self.app_public_key_uri = jsonApp['app_public_key_uri']
         return self
 
-    def to_JSON(self):
+    def to_json(self):
         d = {}
         if self.app_id is not None:
             d['app_id'] = self.app_id.hex
@@ -272,24 +272,24 @@ class Account(models.Model):
         self.account_password = cryptool.decrypt_aes(self.account_password, password, salt)
         return self
 
-    def load_from_JSON(self, s):
-        jsonAccount = json.loads(s)
-        self.account_id = uuid.UUID(jsonAccount['account_id'])
-        self.account_type = jsonAccount['account_type']
-        self.account_username = jsonAccount['account_username']
-        self.account_password = jsonAccount['account_password']
-        self.account_email = jsonAccount['account_email']
-        self.account_cellphone = jsonAccount['account_cellphone']
-        if jsonAccount['account_user'] is not None:
+    def load_from_json(self, s):
+        json_account = json.loads(s)
+        self.account_id = uuid.UUID(json_account['account_id'])
+        self.account_type = json_account['account_type']
+        self.account_username = json_account['account_username']
+        self.account_password = json_account['account_password']
+        self.account_email = json_account['account_email']
+        self.account_cellphone = json_account['account_cellphone']
+        if json_account['account_user'] is not None:
             try:
-                self.account_user = User.objects.get(user_id=json.loads(jsonAccount['account_user'])['user_id'])
+                self.account_user = User.objects.get(user_id=json.loads(json_account['account_user'])['user_id'])
             except User.DoesNotExist:
                 self.account_user = None
         else:
             self.account_user = None
-        if jsonAccount['account_app'] is not None:
+        if json_account['account_app'] is not None:
             try:
-                self.account_app = App.objects.get(app_id=json.loads(jsonAccount['account_app'])['app_id'])
+                self.account_app = App.objects.get(app_id=json.loads(json_account['account_app'])['app_id'])
             except App.DoesNotExist:
                 self.account_app = None
         else:
@@ -297,7 +297,7 @@ class Account(models.Model):
 
         return self
 
-    def to_JSON(self):
+    def to_json(self):
         d = {}
         if self.account_id is not None:
             d['account_id'] = self.account_id.hex
@@ -309,11 +309,11 @@ class Account(models.Model):
         d['account_email'] = self.account_email
         d['account_cellphone'] = self.account_cellphone
         if self.account_user is not None and self.account_user.user_id is not None:
-            d['account_user'] = self.account_user.to_JSON(False)
+            d['account_user'] = self.account_user.to_json(False)
         else:
             d['account_user'] = None
         if self.account_app is not None and self.account_app.app_id is not None:
-            d['account_app'] = self.account_app.to_JSON()
+            d['account_app'] = self.account_app.to_json()
         else:
             d['account_app'] = None
         return json.dumps(d)
@@ -347,3 +347,24 @@ class Service(models.Model):
             self.service_status = 'E'
             self.save()
         return expired
+
+    def to_json(self):
+        d = {}
+        if self.service_id is not None:
+            d['service_id'] = self.service_id.hex
+        else:
+            d['service_id'] = None
+        d['service_action'] = self.service_action
+        d['service_secret'] = self.service_secret
+        d['service_time'] = self.service_time
+        d['service_status'] = self.service_status
+        d['service_app'] = self.service_app
+        if self.service_app is not None and self.service_app.app_id is not None:
+            d['service_app'] = self.service_app.to_json()
+        else:
+            d['service_app'] = None
+        if self.service_account is not None and self.service_account.account_id is not None:
+            d['service_account'] = self.service_account.to_json(False)
+        else:
+            d['service_account'] = None
+        return json.dumps(d)

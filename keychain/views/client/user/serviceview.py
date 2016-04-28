@@ -5,22 +5,42 @@ from django.views.decorators.csrf import csrf_exempt
 from keychain.models import Account
 from keychain.models import App
 from keychain.models import User
+from keychain.models import Service
 from keychain.views.client.userview import validate_request, status_response, encrypt_response
 
 
 @csrf_exempt
-def get_account(request):
+def query(request):
     if request.method == 'POST':
         valid, status_code, userdb, user, certjson, datajson = validate_request(request)
         if not valid:
             return status_response(status_code)
         if userdb is None:
             return status_response(-3)
-        data = {}
-        accountjson = json.loads(datajson['account'])
-        account = Account.objects.get(account_user=userdb, account_id=accountjson['account_id'])
-        userjson = json.loads(datajson['user'])
-        data['account'] = Account.to_json(account.decrypt(userjson['user_password']))
+        service_id = certjson['service_id']
+        try:
+            s = Service.objects.get(service_id=service_id)
+
+            if not s.has_expired():
+                s.ACTION_TYPES = 'S'
+                s.save()
+                data = {}
+                userjson = json.loads(datajson['user'])
+                accounts = Account.objects.filter(account_app=s.service_app,account_user=userdb)
+                if accounts is not None and accounts.count() > 0:
+                    l = []
+                    for account in accounts:
+                        l.append(Account.to_json(account.decrypt(userjson['user_password'])))
+                    accountsjson = json.dumps(l)
+                    data['accounts'] = accountsjson
+                else:
+                    data['accounts'] = None
+                data['service'] = s.to_json()
+                return encrypt_response(data, certjson)
+            else:
+                return status_code(-9)
+        except Service.DoesNotExist:
+            return status_response(-8)
         return encrypt_response(data, certjson)
     return status_response(-6)
 

@@ -67,7 +67,7 @@ def signin(request):
             userdb.save()
             data = {}
             userdb.user_password = certjson['user_password']
-            userjson = userdb.to_JSON()
+            userjson = userdb.to_json()
             user.user_password = certjson['user_password']
             data['user'] = userjson
 
@@ -76,7 +76,7 @@ def signin(request):
             if accounts is not None and accounts.count() > 0:
                 l = []
                 for account in accounts:
-                    l.append(Account.to_JSON(account.decrypt(certjson['user_password'])))
+                    l.append(Account.to_json(account.decrypt(certjson['user_password'])))
                 accountsJson = json.dumps(l)
                 data['accounts'] = accountsJson
             else:
@@ -86,7 +86,7 @@ def signin(request):
             if apps is not None and apps.count() > 0:
                 l = []
                 for app in apps:
-                    l.append(App.to_JSON(app))
+                    l.append(App.to_json(app))
                 appsJson = json.dumps(l)
                 data['apps'] = appsJson
             else:
@@ -187,7 +187,7 @@ def get_all_apps(request):
             if apps is not None and apps.count() > 0:
                 l = []
                 for app in apps:
-                    l.append(App.to_JSON(app))
+                    l.append(App.to_json(app))
                 appsJson = json.dumps(l)
                 data['apps'] = appsJson
             else:
@@ -222,7 +222,7 @@ def signup(request):
                 t.start()
             # user.save()
             data = {}
-            userjson = user.to_JSON()
+            userjson = user.to_json()
             user.user_password = certjson['user_password']
             data['user'] = userjson
 
@@ -230,7 +230,7 @@ def signup(request):
             if accounts is not None and accounts.count() > 0:
                 l = []
                 for account in accounts:
-                    l.append(Account.to_JSON(account.decrypt(certjson['user_password'])))
+                    l.append(Account.to_json(account.decrypt(certjson['user_password'])))
                 accountsJson = json.dumps(l)
                 data['accounts'] = accountsJson
             else:
@@ -240,7 +240,7 @@ def signup(request):
             if apps is not None and apps.count() > 0:
                 l = []
                 for app in apps:
-                    l.append(App.to_JSON(app))
+                    l.append(App.to_json(app))
                 appsJson = json.dumps(l)
                 data['apps'] = appsJson
             else:
@@ -268,7 +268,7 @@ def get_user(request):
                 userdb.save()
             data = {}
             userdb.user_password = certjson['user_password']
-            userjson = userdb.to_JSON()
+            userjson = userdb.to_json()
             user.user_password = certjson['user_password']
             data['user'] = userjson
 
@@ -277,7 +277,7 @@ def get_user(request):
             if accounts is not None and accounts.count() > 0:
                 l = []
                 for account in accounts:
-                    l.append(Account.to_JSON(account.decrypt(certjson['user_password'])))
+                    l.append(Account.to_json(account.decrypt(certjson['user_password'])))
                 accountsJson = json.dumps(l)
                 data['accounts'] = accountsJson
             else:
@@ -287,7 +287,7 @@ def get_user(request):
             if apps is not None and apps.count() > 0:
                 l = []
                 for app in apps:
-                    l.append(App.to_JSON(app))
+                    l.append(App.to_json(app))
                 appsJson = json.dumps(l)
                 data['apps'] = appsJson
             else:

@@ -3,6 +3,7 @@ from django.conf.urls import url
 from keychain.views.client import httptest
 from keychain.views.client import userview
 from keychain.views.client.user import accountview
+from keychain.views.client.user import serviceview
 
 app_name = 'client'
 
@@ -22,6 +23,9 @@ urlpatterns = [
     url(r'^user/account/add/$', accountview.add_account),
     url(r'^user/account/delete/$', accountview.delete_account),
     url(r'^user/account/update/$', accountview.update_account),
+
+    url(r'^user/service/query/$', serviceview.query),
+
     url(r'^user/apps/getall/$', userview.get_all_apps),
     url(r'^user/get/$', userview.get_user),
     # url(r'^user/set/$', userview.get_all_apps),
