@@ -358,7 +358,6 @@ class Service(models.Model):
         d['service_secret'] = self.service_secret
         d['service_time'] = self.service_time
         d['service_status'] = self.service_status
-        d['service_app'] = self.service_app
         if self.service_app is not None and self.service_app.app_id is not None:
             d['service_app'] = self.service_app.to_json()
         else:
