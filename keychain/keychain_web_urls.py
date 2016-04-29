@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^user/$', userwebview.index, name='user_index'),
     url(r'^user/index/$', userwebview.index, name='user_index'),
     url(r'^user/signin/$', userwebview.signin, name='user_signin'),
+    url(r'^user/signin/(?P<service_id>\w{32})/(?P<service_secret>\w{32})/$', userwebview.signinquick, name='user_signin_quick'),
     url(r'^user/signup/$', userwebview.signup, name='user_signup'),
     url(r'^user/signout/$', userwebview.signout, name='user_signout'),
     url(r'^user/account/$', accountwebview.ListView.as_view(), name='user_account'),

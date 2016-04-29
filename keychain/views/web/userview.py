@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from keychain import captcha as captcha_generator
 from keychain import cryptool
-from keychain.models import Account, User
+from keychain.models import Account, User, Service
 
 # Create your views here.
 
@@ -20,6 +20,7 @@ account_type_default = 1
 account_type_user_name = 1
 account_type_user_email = 2
 account_type_user_cellphone = 3
+account_type_cellphone_scan = 4
 
 
 class UserForm(forms.Form):
@@ -46,12 +47,9 @@ def next_captcha():
 
 
 def set_cookie(response, user):
+    if user.user_type == account_type_cellphone_scan:
+        pass
     dt = timezone.now() + datetime.timedelta(minutes=30)
-    # user_cookie = uuid.uuid4().hex
-    # user.user_cookie = user_cookie
-    # user.user_cookie_time = dt
-    # user.save()
-    # response.set_cookie('user_cookie', user_cookie, expires=dt, domain='localhost')
     time_now = math.floor(time.mktime(dt.timetuple()))
     response.set_cookie('account_type', user.user_type, expires=dt, domain='localhost')
     response.set_cookie('time', time_now, expires=dt, domain='localhost')
@@ -82,10 +80,7 @@ def index(request):
         signature = request.COOKIES['signature']
         time_request = request.COOKIES['time']
         sign = cryptool.digest_sha256(str(account_type) + str(time_request) + user_password_crypt)
-        # print('out signature')
-        # print(str(account_type))
         if sign == signature:
-            print('in signature')
             user_password_json = cryptool.decrypt_rsa_base64(user_password_crypt, 'private_key_py.pem')
             user_password_dict = json.loads(user_password_json)
             time_in = user_password_dict['time']
@@ -111,10 +106,7 @@ def index(request):
                 if user is not None:
                     request.session['user_password_plain'] = password
     if user is not None:
-        # print("user is not None")
         account_list = Account.objects.filter(account_user=user)
-        # if account_list is not None:
-        #     print("not none")
         return render(request, 'keychain/web/user/index.html', {
             'user_name': user.get_name(),
             'account_list': account_list,
@@ -220,6 +212,20 @@ def signin(request):
         'captcha_url': captcha[0],
         'err_message': err_message,
     })
+
+
+def signinquick(request, service_id, service_secret):
+    if request.method == 'GET':
+        s = Service.objects.get(service_id)
+        if not s.has_expired():
+            if s.service_status=='C' and s.service_secret.hex==service_secret:
+                user = s.service_account.account_user
+                if user is not None:
+                    request.session['user_id'] = user.user_id.hex
+                    response = HttpResponseRedirect('../')
+                    user.user_type = account_type_cellphone_scan
+                    set_cookie(response, user)
+                    return response
 
 
 def signup(request):

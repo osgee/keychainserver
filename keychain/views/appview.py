@@ -73,14 +73,36 @@ def query(request, app_id, service_id):
         elif request.method == 'POST':
             return HttpResponse(s.service_status)
         else:
-            return HttpResponse('sorry!')
+            return HttpResponse(-1)
         # return HttpResponse(mstream.getvalue(), "image/png")
 
     except App.DoesNotExist:
-        return HttpResponse('sorry!')
+        return HttpResponse(-1)
     except Service.DoesNotExist:
-        return HttpResponse('sorry!')
-
+        return HttpResponse(-1)
+        
+@csrf_exempt      
+def redirect(request, app_id, service_id ):
+    try:
+        app = App.objects.get(app_id=app_id)
+        s = Service.objects.get(service_id=service_id)
+        s.has_expired()
+        if request.method == 'GET':
+            return render(request, 'keychain/user/client/qrcode.html', {
+                    'service_qrcode': s.service_qrcode,
+                    'app_service': '/keychain/app/service/'+app_id+'/',
+                    'service_url': '/keychain/app/service/'+app_id+'/'+service_id+'/',
+                    'service_status': s.service_status,
+               })
+        elif request.method == 'POST':
+            return HttpResponse(s.service_status)
+        else:
+            return HttpResponse(-1)
+        # return HttpResponse(mstream.getvalue(), "image/png")
+    except App.DoesNotExist:
+        return HttpResponse(-1)
+    except Service.DoesNotExist:
+        return HttpResponse(-1)
 
 def service(request, app_id):
     try:
@@ -97,6 +119,7 @@ def service(request, app_id):
         img.save(mstream, "PNG")
         s.service_qrcode = img_path
         s.service_time = timezone.now()
+        s.service_app = app
         s.save()
         # return render(request, 'keychain/user/client/qrcode.html', {
         #        'qrcode_path': img_path,

@@ -8,6 +8,8 @@ from keychain.models import User
 from keychain.models import Service
 from keychain.views.client.userview import validate_request, status_response, encrypt_response
 
+import re
+
 
 @csrf_exempt
 def query(request):
@@ -17,25 +19,55 @@ def query(request):
             return status_response(status_code)
         if userdb is None:
             return status_response(-3)
+        if not 'service_id' in certjson.keys():
+            return status_response(-11)
         service_id = certjson['service_id']
+        p = re.compile(r'\w*')
+        if len(service_id)!=32 or not p.match(service_id):
+            return status_response(-11)
         try:
             s = Service.objects.get(service_id=service_id)
-
             if not s.has_expired():
-                s.ACTION_TYPES = 'S'
+                s.service_status = 'S'
                 s.save()
                 data = {}
                 accounts = Account.objects.filter(account_app=s.service_app,account_user=userdb)
                 if accounts is not None and accounts.count() > 0:
                     l = []
                     for account in accounts:
-                        l.append(account.to_json())
+                        l.append(account.to_json(False, False))
                     accountsjson = json.dumps(l)
-                    data['accounts'] = accountsjson
+                    data['service_accounts'] = accountsjson
                 else:
-                    data['accounts'] = None
+                    data['service_accounts'] = None
                 data['service'] = s.to_json()
                 return encrypt_response(data, certjson)
+            else:
+                return status_response(-9)
+        except Service.DoesNotExist:
+            return status_response(-8)
+        return encrypt_response(data, certjson)
+    return status_response(-6)
+    
+    
+@csrf_exempt
+def confirm(request):
+    if request.method == 'POST':
+        valid, status_code, userdb, user, certjson, datajson = validate_request(request)
+        if not valid:
+            return status_response(status_code)
+        if userdb is None:
+            return status_response(-3)
+        service_id = certjson['service_id']
+        account_id = certjson['account_id']
+        try:
+            s = Service.objects.get(service_id=service_id)
+            a = Account.objects.get(account_id=account_id)
+            if not s.has_expired():
+                s.service_status = 'C'
+                s.service_account = a
+                s.save()
+                return status_response(1)
             else:
                 return status_response(-9)
         except Service.DoesNotExist:

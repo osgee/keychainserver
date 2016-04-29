@@ -203,10 +203,12 @@ class App(models.Model):
     app_public_key_uri = models.CharField(max_length=200)
 
     def app_publickey_path(self, name):
-        return './upload/apps/{0}/publickey/{1}'.format(self.app_name, 'id_rsa.pub')
+        self.app_public_key_uri = '/static/keychain/apps/{0}/publickey/{1}'.format(self.app_name, 'id_rsa.pub')
+        return 'keychain/static/keychain/apps/{0}/publickey/{1}'.format(self.app_name, 'id_rsa.pub')
 
     def app_logo_path(self, name):
-        return './upload/apps/{0}/logo/{1}'.format(self.app_name, 'logo_' + name)
+        self.app_logo_uri = '/static/keychain/apps/{0}/logo/{1}'.format(self.app_name, 'logo_' + name)
+        return 'keychain/static/keychain/apps/{0}/logo/{1}'.format(self.app_name, 'logo_' + name)
 
     def has_signed_up(self):
         try:
@@ -297,7 +299,7 @@ class Account(models.Model):
 
         return self
 
-    def to_json(self):
+    def to_json(self, withUser = True, withApp = True):
         d = {}
         if self.account_id is not None:
             d['account_id'] = self.account_id.hex
@@ -308,11 +310,11 @@ class Account(models.Model):
         d['account_password'] = self.account_password
         d['account_email'] = self.account_email
         d['account_cellphone'] = self.account_cellphone
-        if self.account_user is not None and self.account_user.user_id is not None:
+        if withUser and self.account_user is not None and self.account_user.user_id is not None:
             d['account_user'] = self.account_user.to_json(False)
         else:
             d['account_user'] = None
-        if self.account_app is not None and self.account_app.app_id is not None:
+        if withApp and self.account_app is not None and self.account_app.app_id is not None:
             d['account_app'] = self.account_app.to_json()
         else:
             d['account_app'] = None
@@ -342,11 +344,17 @@ class Service(models.Model):
 
     def has_expired(self):
         now = timezone.now()
-        expired =  now >= self.service_time + datetime.timedelta(minutes=0.2)
-        if expired:
+        expired =  now >= self.service_time + datetime.timedelta(minutes=0.5)
+        if expired and self.service_status in 'ISC':
             self.service_status = 'E'
             self.save()
-        return expired
+            return expired
+        elif self.service_status=='E':
+            return True
+        elif self.service_status=='F':
+            return True
+        else:
+            return False
 
     def to_json(self):
         d = {}
@@ -356,7 +364,7 @@ class Service(models.Model):
             d['service_id'] = None
         d['service_action'] = self.service_action
         d['service_secret'] = self.service_secret.hex
-        d['service_time'] = self.service_time
+        d['service_time'] = math.floor(time.mktime(self.service_time.timetuple()))
         d['service_status'] = self.service_status
         if self.service_app is not None and self.service_app.app_id is not None:
             d['service_app'] = self.service_app.to_json()

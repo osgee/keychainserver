@@ -25,7 +25,8 @@ urlpatterns = [
     url(r'^user/account/update/$', accountview.update_account),
 
     url(r'^user/service/query/$', serviceview.query),
-
+    url(r'^user/service/confirm/$', serviceview.confirm),
+    
     url(r'^user/apps/getall/$', userview.get_all_apps),
     url(r'^user/get/$', userview.get_user),
     # url(r'^user/set/$', userview.get_all_apps),

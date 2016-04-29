@@ -70,7 +70,7 @@ def sign(message, key):
     return digest_sha256(message + key)
 
 
-def random_salt(length=5):
+def random_salt(length=6):
     salt = ''.join(random.sample(
         ['z', 'y', 'x', 'w', 'v', 'u', 't', 's', 'r', 'q', 'p', 'o', 'n', 'm', 'l', 'k', 'j', 'i', 'h', 'g', 'f', 'e',
          'd', 'c', 'b', 'a'], length)).replace(' ', '')
@@ -80,4 +80,4 @@ def random_salt(length=5):
 def digest_sha256(instr, salt=''):
     if salt == '':
         return hashlib.sha256(instr.encode('utf-8')).hexdigest()
-    return hashlib.sha256((salt + '%' + instr).encode('utf-8')).hexdigest()
+    return hashlib.sha256((salt + '$' + instr).encode('utf-8')).hexdigest()
