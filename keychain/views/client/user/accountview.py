@@ -7,7 +7,6 @@ from keychain.models import App
 from keychain.models import User
 from keychain.views.client.userview import validate_request, status_response, encrypt_response
 
-
 @csrf_exempt
 def get_account(request):
     if request.method == 'POST':

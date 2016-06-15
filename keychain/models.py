@@ -69,7 +69,7 @@ class User(models.Model):
         self.user_salt = salt
         self.user_password = cryptool.digest_sha256(self.user_password, salt)
 
-        self.user_secret = cryptool.random_salt(12)
+        # self.user_secret = cryptool.random_salt(12)
         self.save()
         # self.user_password_plain = user_password_plain
         return self

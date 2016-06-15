@@ -46,7 +46,6 @@ def signout(request):
 def status_response(error_code):
     d = {}
     d['status_code'] = error_code
-    print(error_code)
     return HttpResponse(json.dumps(d))
 
 
@@ -70,9 +69,7 @@ def signin(request):
             userjson = userdb.to_json()
             user.user_password = certjson['user_password']
             data['user'] = userjson
-
             accounts = Account.objects.filter(account_user=userdb)
-            # print(dir(accounts))
             if accounts is not None and accounts.count() > 0:
                 l = []
                 for account in accounts:
@@ -222,8 +219,8 @@ def signup(request):
                 t.start()
             # user.save()
             data = {}
-            userjson = user.to_json()
             user.user_password = certjson['user_password']
+            userjson = user.to_json()
             data['user'] = userjson
 
             accounts = Account.objects.filter(account_user=user)
@@ -273,7 +270,6 @@ def get_user(request):
             data['user'] = userjson
 
             accounts = Account.objects.filter(account_user=userdb)
-            # print(dir(accounts))
             if accounts is not None and accounts.count() > 0:
                 l = []
                 for account in accounts:

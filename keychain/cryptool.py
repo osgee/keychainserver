@@ -24,6 +24,7 @@ def encrypt_aes(content, key, salt='', iv=b'\x00\x00\x00\x00\x00\x00\x00\x00\x00
     cryptbyte = cipher.encrypt(contentbyte)
     cryptbase64byte = base64.encodestring(cryptbyte)
     cryptbase64 = cryptbase64byte.decode('utf-8')
+    cryptbase64 = cryptbase64[:cryptbase64.rindex('\n')]
     return cryptbase64
 
 
@@ -38,9 +39,7 @@ def decrypt_aes(cryptbase64, key, salt='', iv=b'\x00\x00\x00\x00\x00\x00\x00\x00
     cryptbase64byte = cryptbase64.encode('utf-8')
     cryptbyte = base64.decodestring(cryptbase64byte)
     contentbyte = cipher.decrypt(cryptbyte)
-    # print(contentbyte)
     content = contentbyte.decode('utf-8')
-    # return content
     return unpad(content)
 
 
