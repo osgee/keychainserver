@@ -3,6 +3,7 @@ mkdir -p ./keychain/static/keychain/cache/captcha
 mkdir -p ./keychain/static/keychain/cache/qrcode
 rm
 rm -rf ./keychain/migrations/0*
+service mysql restart
 python3 ./manage.py makemigrations
 python3 ./manage.py migrate
 service mysql restart
