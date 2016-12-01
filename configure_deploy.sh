@@ -1,15 +1,31 @@
+#!/bin/bash
+
+sudo apt update -y
+sudo apt install screen -y
+
 current_path=$(pwd)
-project_path="~/workspace/keychainserver"
+project_path="/home/ubuntu/workspace/keychainserver/"
 reset_mysql_pass_sql_file="reset_mysql_pass.sql"
+mysql_sql_file="mysql_sql_file.sql"
 public_key_file="public_key_py.pem"
 private_key_file="private_key_py.pem"
 VirtualHost_File="001-keychainserver.conf"
 Http_Proxy_File="http-proxy.conf"
+Apache2_Sites_Enabled_Dir="/etc/apache2/sites-enabled/"
+mysqld_safe_daemon="mysqld_safe_daemon"
+PASSWORD_CHANGED=0
+DEFAULT_PASSWORD="password"
+PASSWORD=$DEFAULT_PASSWORD
+SETTING_FILE=$project_path'superkeychain/settings.py'
 
-cd /etc/apache2/sites-enabled
+cd $Apache2_Sites_Enabled_Dir
 
-if [ -d $VirtualHost_File ]; then
-    sudo rm -i $VirtualHost_File
+if [ -e $VirtualHost_File ]; then
+    sudo rm -f $Apache2_Sites_Enabled_Dir$VirtualHost_File
+fi
+
+if [ -e 001-cloud9.conf ]; then
+    sudo mv 001-cloud9.conf ../sites-available/001-cloud9.conf.bak
 fi
 
 sudo echo "<VirtualHost *:8080>">>$VirtualHost_File
@@ -22,34 +38,50 @@ sudo echo "</VirtualHost>">>$VirtualHost_File
 
 cd /etc/apache2/conf-enabled
 
-if [ -d $Http_Proxy_File ]; then
-    sudo rm -i $Http_Proxy_File
+if [ -e $Http_Proxy_File ]; then
+    sudo rm -f $Http_Proxy_File
 fi
 
 sudo echo "LoadModule proxy_module /usr/lib/apache2/modules/mod_proxy.so">>$Http_Proxy_File
 sudo echo "LoadModule proxy_http_module /usr/lib/apache2/modules/mod_proxy_http.so">>$Http_Proxy_File
 
-exit
 
 cd ~
 
-echo "Would you like to reset mysql root password? (y/n) [y]"\
+echo "Would you like to reset mysql root password? (y/n) [y]"
 read RESET_MYSQL_PASS
+
 if [ "$RESET_MYSQL_PASS" == "y" ] || [ "$RESET_MYSQL_PASS" == "" ]; then
     echo "please input your mysql root password"
     read PASSWORD
     sudo service mysql stop
-    echo "use mysql;">>$reset_mysql_pass_sql_file
-    echo "update user set Password=PASSWORD('$PASSWORD') where USER='root';">>$reset_mysql_pass_sql_file
-    echo "flush privileges;">>$reset_mysql_pass_sql_file
-    sudo mysqld_safe --skip-grant-table source $reset_mysql_pass_sql_file
+    echo "UPDATE user SET Password=PASSWORD('$PASSWORD') WHERE USER='root';">>$reset_mysql_pass_sql_file
+    echo "FLUSH PRIVILEGES;">>$reset_mysql_pass_sql_file
+    echo "CREATE DATABASE IF NOT EXISTS superkeychain;">>$reset_mysql_pass_sql_file
+    sudo screen -dmS $mysqld_safe_daemon sudo mysqld_safe --skip-grant-table
+    echo "Starting mysqld safe daemon..."
+    sleep 3
+    mysql -uroot mysql -e "source $reset_mysql_pass_sql_file"
     rm $reset_mysql_pass_sql_file
+    sudo screen -X -S $mysqld_safe_daemon quit
+    sed -i -E "s/('PASSWORD': ')(.*)(',)/\1$PASSWORD\3/g" $SETTING_FILE
     echo "Your mysql root password has been reset"
+    echo "Please change the mysql password in keychainserver/superkeychain/settings.py consistently"
 else
+    sudo service mysql stop
+    echo "create database superkeychain if not exists;">>$mysql_sql_file
+    sudo screen -dmS $mysqld_safe_daemon sudo mysqld_safe --skip-grant-table
+    echo "Starting mysqld safe daemon..."
+    sleep 3
+    mysql -uroot mysql -e "source $mysql_sql_file"
+    rm $mysql_sql_file
+    sudo screen -X -S $mysqld_safe_daemon quit
     echo "Skiped reset mysql root password"
+    echo "The default mysql root password is: $DEFAULT_PASSWORD"
 fi
 
-sudo service mysql start
+
+sudo service mysql restart
 
 echo "Would you like to reset RSA key pair? (y/n) [y]"
 read RESET_RSA_KEY
@@ -62,7 +94,9 @@ if [ "$RESET_RSA_KEY" == "y" ] || [ "$RESET_RSA_KEY" == "" ]; then
 else
     echo "Skiped reset RSA key"
 fi
-    
+
+sudo pip3 install django pymysql pillow qrcode pycrypto rsa
+
 cd $project_path
 rm -rf ./keychain/static/keychain/app/*
 mkdir -p ./keychain/static/keychain/cache/captcha/*
@@ -71,17 +105,27 @@ rm -rf ./keychain/migrations/0*
 python3 ./manage.py makemigrations
 python3 ./manage.py migrate
 sudo service mysql restart
+sudo service mysql status
 sudo service apache2 restart
+sudo service apache2 status
 cd $current_path
 
 echo "Your server is ready to running"
-echo "Would you like to run server? (y/n) [y]"
-read RUN_SERVER
-if [ "$RUN_SERVER" == "y" ] || [ "$RUN_SERVER" == "" ]; then
-    cd $project_path
-    sudo python3 manage.py runserver localhost:8000
-else
-    echo "Usage:"
-    echo "$ cd $project_path"
-    echo "$ sudo python3 manage.py runserver localhost:8000"
+if [ $PASSWORD_CHANGED == 0 ]; then
+    echo "Would you like to run server? (y/n) [y]"
+    read RUN_SERVER
+    if [ "$RUN_SERVER" == "y" ] || [ "$RUN_SERVER" == "" ]; then
+        cd $project_path
+        keychainserver_daemon="keychainserver_daemon"
+        sudo screen -dmS $keychainserver_daemon sudo python3 manage.py runserver localhost:8000
+        echo "Server run on $ screen -r ($keychainserver_daemon)"
+    else
+        echo "You can run keychainserver by yourself"
+    fi
 fi
+
+echo "Usage:"
+echo "$ cd $project_path"
+echo "$ sudo python3 manage.py runserver localhost:8000"
+
+cd $current_path
