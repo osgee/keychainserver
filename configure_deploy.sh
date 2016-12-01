@@ -98,9 +98,9 @@ fi
 sudo pip3 install django pymysql pillow qrcode pycrypto rsa
 
 cd $project_path
-rm -rf ./keychain/static/keychain/app/*
-mkdir -p ./keychain/static/keychain/cache/captcha/*
-mkdir -p ./keychain/static/keychain/cache/qrcode/*
+rm -rf ./keychain/static/keychain/apps/*
+mkdir -p ./keychain/static/keychain/cache/captcha/
+mkdir -p ./keychain/static/keychain/cache/qrcode/
 rm -rf ./keychain/migrations/0*
 python3 ./manage.py makemigrations
 python3 ./manage.py migrate
