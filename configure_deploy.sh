@@ -9,7 +9,7 @@ reset_mysql_pass_sql_file="reset_mysql_pass.sql"
 mysql_sql_file="mysql_sql_file.sql"
 public_key_file="public_key_py.pem"
 private_key_file="private_key_py.pem"
-VirtualHost_File="001-keychainserver.conf"
+VirtualHost_File=$Apache2_Sites_Enabled_Dir$VirtualHost_File'001-keychainserver.conf'
 Http_Proxy_File="http-proxy.conf"
 Apache2_Sites_Enabled_Dir="/etc/apache2/sites-enabled/"
 mysqld_safe_daemon="mysqld_safe_daemon"
@@ -21,7 +21,7 @@ SETTING_FILE=$project_path'superkeychain/settings.py'
 cd $Apache2_Sites_Enabled_Dir
 
 if [ -e $VirtualHost_File ]; then
-    sudo rm -f $Apache2_Sites_Enabled_Dir$VirtualHost_File
+    sudo rm -f $VirtualHost_File
 fi
 
 if [ -e 001-cloud9.conf ]; then
@@ -44,7 +44,6 @@ fi
 
 sudo echo "LoadModule proxy_module /usr/lib/apache2/modules/mod_proxy.so">>$Http_Proxy_File
 sudo echo "LoadModule proxy_http_module /usr/lib/apache2/modules/mod_proxy_http.so">>$Http_Proxy_File
-
 
 cd ~
 
