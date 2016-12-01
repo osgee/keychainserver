@@ -53,32 +53,29 @@ read RESET_MYSQL_PASS
 if [ "$RESET_MYSQL_PASS" == "y" ] || [ "$RESET_MYSQL_PASS" == "" ]; then
     echo "please input your mysql root password"
     read PASSWORD
-    sudo service mysql stop
-    echo "UPDATE user SET Password=PASSWORD('$PASSWORD') WHERE USER='root';">>$reset_mysql_pass_sql_file
-    echo "FLUSH PRIVILEGES;">>$reset_mysql_pass_sql_file
-    echo "CREATE DATABASE IF NOT EXISTS superkeychain;">>$reset_mysql_pass_sql_file
-    sudo screen -dmS $mysqld_safe_daemon sudo mysqld_safe --skip-grant-table
-    echo "Starting mysqld safe daemon..."
-    sleep 3
-    mysql -uroot mysql -e "source $reset_mysql_pass_sql_file"
-    rm $reset_mysql_pass_sql_file
-    sudo screen -X -S $mysqld_safe_daemon quit
-    sed -i -E "s/('PASSWORD': ')(.*)(',)/\1$PASSWORD\3/g" $SETTING_FILE
-    echo "Your mysql root password has been reset"
-    echo "Please change the mysql password in keychainserver/superkeychain/settings.py consistently"
 else
-    sudo service mysql stop
-    echo "create database superkeychain if not exists;">>$mysql_sql_file
-    sudo screen -dmS $mysqld_safe_daemon sudo mysqld_safe --skip-grant-table
-    echo "Starting mysqld safe daemon..."
-    sleep 3
-    mysql -uroot mysql -e "source $mysql_sql_file"
-    rm $mysql_sql_file
-    sudo screen -X -S $mysqld_safe_daemon quit
-    echo "Skiped reset mysql root password"
+    echo "Use default mysql root password"
     echo "The default mysql root password is: $DEFAULT_PASSWORD"
 fi
 
+sudo service mysql stop
+echo "UPDATE user SET Password=PASSWORD('$PASSWORD') WHERE USER='root';">>$reset_mysql_pass_sql_file
+echo "FLUSH PRIVILEGES;">>$reset_mysql_pass_sql_file
+echo "CREATE DATABASE IF NOT EXISTS superkeychain;">>$reset_mysql_pass_sql_file
+sudo screen -dmS $mysqld_safe_daemon sudo mysqld_safe --skip-grant-table
+echo "Starting mysqld safe daemon..."
+sleep 3
+mysql -uroot mysql -e "source $reset_mysql_pass_sql_file"
+rm $reset_mysql_pass_sql_file
+sudo screen -X -S $mysqld_safe_daemon quit
+sed -i -E "s/('PASSWORD': ')(.*)(',)/\1$PASSWORD\3/g" $SETTING_FILE
+
+if [ "$RESET_MYSQL_PASS" == "y" ] || [ "$RESET_MYSQL_PASS" == "" ]; then
+    echo "Your mysql root password has been reset"
+else
+    echo "Use default mysql root password"
+    echo "The default mysql root password is: $DEFAULT_PASSWORD"
+fi
 
 sudo service mysql restart
 
