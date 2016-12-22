@@ -8,7 +8,8 @@ project_path="/home/ubuntu/workspace/keychainserver/"
 reset_mysql_pass_sql_file="reset_mysql_pass.sql"
 mysql_sql_file="mysql_sql_file.sql"
 public_key_file="public_key_py.pem"
-private_key_file="private_key_py.pem"
+private_key_file="private_key.pem"
+private_unencrypted="private_key_py.pem"
 VirtualHost_File=$Apache2_Sites_Enabled_Dir$VirtualHost_File'001-keychainserver.conf'
 Http_Proxy_File="http-proxy.conf"
 Apache2_Sites_Enabled_Dir="/etc/apache2/sites-enabled/"
@@ -83,9 +84,12 @@ echo "Would you like to reset RSA key pair? (y/n) [y]"
 read RESET_RSA_KEY
 if [ "$RESET_RSA_KEY" == "y" ] || [ "$RESET_RSA_KEY" == "" ]; then
     cd $project_path
-    openssl genpkey -algorithm RSA -out $private_key_file -pkeyopt rsa_keygen_bits:2048
-    openssl rsa -pubout -in $private_key_file -out $public_key_file
-    sudo chmod go-rw $private_key_file
+    openssl genpkey -algorithm RSA -out $private_key_file -pkeyopt rsa_keygen_bits:2048 -outform PEM
+    openssl rsa -in $private_key_file -outform PEM -pubout -out $public_key_file
+    openssl rsa -outform PEM -in $private_key_file -out $private_unencrypted
+    # openssl rsa -pubout -in $private_key_file -out $public_key_file
+    rm $private_key_file
+    sudo chmod go-rw $private_unencrypted
     echo "Your new RSA key pair has been generated, please replace the keychain client's public key file with $public_key_file, and keep the same name"
 else
     echo "Skiped reset RSA key"
@@ -95,6 +99,7 @@ sudo pip3 install django pymysql pillow qrcode pycrypto rsa
 
 cd $project_path
 rm -rf ./keychain/static/keychain/apps/*
+rm -rf ./keychain/static/keychain/cache/
 mkdir -p ./keychain/static/keychain/cache/captcha/
 mkdir -p ./keychain/static/keychain/cache/qrcode/
 rm -rf ./keychain/migrations/0*

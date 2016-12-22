@@ -80,3 +80,9 @@ def digest_sha256(instr, salt=''):
     if salt == '':
         return hashlib.sha256(instr.encode('utf-8')).hexdigest()
     return hashlib.sha256((salt + '$' + instr).encode('utf-8')).hexdigest()
+
+
+def otp(otp_key):
+    if len(otp_key<50):
+        raise Exception('otp key less than 50, may be wrong!')
+    

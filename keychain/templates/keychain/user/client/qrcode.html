@@ -7,24 +7,35 @@
 <body id="body">
 <input type="hidden" id="app_service" value="{{ app_service }}">
 <img id="img" src="{% static service_qrcode %}">
-<p id="service_status">{{ service_status }}</p>
+<p id="service_status"></p>
 <p id="hint"></p>
 <script src="{% static 'keychain/javascript/jquery-2.2.3.min.js' %}"></script>
 <script>
-    var queryInterval = setInterval(query,400)
+    var queryInterval = setInterval(query,800)
     function query() {
-       $.post({
+       $.ajax({
+          dataType: "json",
+          method: 'post',
           url: "{{ service_url }}",
           success: function( result ) {
-              if(result=='E'){
+              if(result.service_status =='E'){
                   clearInterval(queryInterval)
+                  $( "#service_status" ).text("Expired! Please Refresh the Qrcode!");
                   var a = $("<a></a>")
                   var img = $("#img")
                   a.attr("href",$("#app_service").attr("value"))
                   $("#body").prepend(a)
                   img.remove().appendTo(a)
-              }
-            $( "#service_status" ).text(result);
+              }else if(result.service_status =='C'){
+                  $( "#service_status" ).text("Comfirmed! Redirect to Login Page! ( Login as "+result.account_username+" )");
+                  clearInterval(queryInterval)
+              }else if(result.service_status =='S'){
+                  $( "#service_status" ).text("Please Comfirm on the Phone!");
+              }else if(result.service_status =='I'){
+                 $( "#service_status" ).text("Please Scan the Qrcode!");
+              };
+              
+            // $( "#service_status" ).text(result);
           }
         });
     }

@@ -75,6 +75,7 @@ def set_cookie(response, user):
 def index(request):
     user = None
     if 'account_type' in request.COOKIES and 'user_password_crypt' in request.COOKIES:
+        print('here')
         account_type = int(request.COOKIES['account_type'])
         user_password_crypt = request.COOKIES['user_password_crypt']
         signature = request.COOKIES['signature']
@@ -111,7 +112,12 @@ def index(request):
             'user_name': user.get_name(),
             'account_list': account_list,
         })
-    return render(request, 'keychain/web/user/index.html', {})
+        return render(request, 'keychain/web/user/index.html', {})
+    else:
+        return HttpResponseRedirect('../signin', {
+                            'signup': False,
+                        })
+                        
 
 
 def signout(request):
@@ -190,7 +196,7 @@ def signin(request):
                 if user is not None:
                     request.session['user_id'] = user.user_id.hex
                     request.session['user_password_plain'] = user_password_plain
-                    response = HttpResponseRedirect('../')
+                    response = HttpResponseRedirect('../index/')
                     user.user_type = account_type
                     set_cookie(response, user)
                     return response

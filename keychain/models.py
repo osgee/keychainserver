@@ -32,6 +32,7 @@ class User(models.Model):
     user_cookie = models.UUIDField(null=True, editable=True)
     user_cookie_time = models.DateTimeField('cookie expire time', null=True)
     user_salt = models.CharField(max_length=50)
+    user_otp = models.CharField(max_length=100)
 
     def get_name(self):
         if self.user_type in [1, '1']:
@@ -69,9 +70,9 @@ class User(models.Model):
         self.user_salt = salt
         self.user_password = cryptool.digest_sha256(self.user_password, salt)
 
-        # self.user_secret = cryptool.random_salt(12)
+        self.user_secret = cryptool.random_salt(12)
         self.save()
-        # self.user_password_plain = user_password_plain
+        self.user_password_plain = user_password_plain
         return self
 
     def get_by_password(self):

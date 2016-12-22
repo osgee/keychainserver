@@ -1,5 +1,6 @@
 from io import BytesIO
 
+import json
 import qrcode
 from django import forms
 from django.http import HttpResponse, HttpResponseRedirect
@@ -8,7 +9,7 @@ from django.utils import timezone
 from django.views import generic
 from django.views.decorators.csrf import csrf_exempt
 
-from keychain.models import App, Service
+from keychain.models import App, Service, Account
 
 
 baseurl = 'https://keychain-miui.c9users.io/keychain/app/service/'
@@ -62,16 +63,27 @@ def query(request, app_id, service_id):
     try:
         app = App.objects.get(app_id=app_id)
         s = Service.objects.get(service_id=service_id)
-        s.has_expired()
         if request.method == 'GET':
+            s.has_expired()
             return render(request, 'keychain/user/client/qrcode.html', {
                     'service_qrcode': s.service_qrcode,
                     'app_service': '/keychain/app/service/'+app_id+'/',
                     'service_url': '/keychain/app/service/'+app_id+'/'+service_id+'/',
                     'service_status': s.service_status,
-               })
+              })
         elif request.method == 'POST':
-            return HttpResponse(s.service_status)
+            result={}
+            if(s.has_expired()):
+                result['service_status']=s.service_status
+                return HttpResponse(json.dumps(result))
+            elif s.service_status == 'C':
+                account_username = s.service_account.account_username
+                result['service_status']=s.service_status
+                result['account_username']=account_username
+                return HttpResponse(json.dumps(result))
+            else:
+                result['service_status']=s.service_status
+                return HttpResponse(json.dumps(result))
         else:
             return HttpResponse(-1)
         # return HttpResponse(mstream.getvalue(), "image/png")
